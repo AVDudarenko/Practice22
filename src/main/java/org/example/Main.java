@@ -4,6 +4,7 @@ import com.google.protobuf.Empty;
 
 import java.sql.*;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class Main {
 
@@ -16,7 +17,21 @@ public class Main {
 
 
 	public static void main(String[] args) throws SQLException {
-		createDBCarsTable();
+//		createDBCarsTable();
+		Scanner scanner = new Scanner(System.in);
+		String carModel = null;
+		String cardBrand = null;
+
+		for (int i = 0; i < 5; i++) {
+			System.out.println("Please enter car model: ");
+			carModel = scanner.nextLine();
+			System.out.println("Please enter car brand: ");
+			cardBrand = scanner.nextLine();
+			insertStatements(cardBrand, carModel);
+		}
+		scanner.close();
+
+
 	}
 
 	private static void createDBCarsTable() throws SQLException {
@@ -50,8 +65,6 @@ public class Main {
 
 	private static Connection getDBConnection() throws SQLException {
 		Connection conn;
-
-
 		Properties connectionProps = new Properties();
 		connectionProps.put("user", userOfDataBase);
 		connectionProps.put("password", passwordOfDataBase);
@@ -79,5 +92,29 @@ public class Main {
 
 		System.out.println("Connected to database");
 		return conn;
+	}
+
+	private static void insertStatements( String carBrand, String carModel) {
+		Connection connection = null;
+		try {
+			connection = getDBConnection();
+
+			//insert statement
+			String query = " insert into cars (MODEL, CAR_BRAND)"
+					+ " values (?, ?)";
+
+			// create the mysql insert prepared statement
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			preparedStatement.setString(1, carBrand);
+			preparedStatement.setString(2, carModel);
+
+			// execute the prepared statement
+			preparedStatement.executeUpdate();
+
+			connection.close();
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+
 	}
 }

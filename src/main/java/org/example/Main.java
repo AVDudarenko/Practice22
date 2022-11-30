@@ -17,18 +17,19 @@ public class Main {
 
 
 	public static void main(String[] args) throws SQLException {
-		createDBCarsTable();
 		Scanner scanner = new Scanner(System.in);
 		String carModel;
 		String cardBrand;
 		String command;
 
-		System.out.println("Available commands: createDBTable, insertStatement, getInfoFromDB");
+		System.out.println("Available commands: createDBTable, insertStatement, getInfoFromDB, deleteCar");
 		command = scanner.nextLine();
 		switch (command) {
 			case "createDBTable" -> createDBCarsTable();
 			case "insertStatement" -> {
-				for (int i = 0; i < 5; i++) {
+				System.out.println("Enter count of cars: ");
+				int countOfCarsForInsert = scanner.nextInt();
+				for (int i = 0; i < countOfCarsForInsert; i++) {
 					System.out.println("Please enter car model: ");
 					carModel = scanner.nextLine();
 					System.out.println("Please enter car brand: ");
@@ -37,6 +38,11 @@ public class Main {
 				}
 			}
 			case "getInfoFromDB" -> getInfoFromDB();
+			case "deleteCar" -> {
+				System.out.println("Enter count of cars: ");
+				carModel = scanner.nextLine();
+				deleteCarFromDB(carModel);
+			}
 		}
 	}
 
@@ -50,7 +56,7 @@ public class Main {
 		Connection connection = null;
 		Statement statement = null;
 
-		String createTableSql = "CREATE TABLE cars("
+		String createTableSqlQuery = "CREATE TABLE cars("
 				+ "CAR_ID INTEGER AUTO_INCREMENT PRIMARY KEY, "
 				+ "MODEL VARCHAR(20), "
 				+ "CAR_BRAND VARCHAR(20)"
@@ -60,7 +66,7 @@ public class Main {
 			connection = getDBConnection();
 			statement = getDBConnection().createStatement();
 
-			statement.execute(createTableSql);
+			statement.execute(createTableSqlQuery);
 			System.out.println("Table \"dbcars\" is created");
 		} catch (SQLException ex) {
 			System.out.println(ex.getMessage());
@@ -123,11 +129,11 @@ public class Main {
 			connection = getDBConnection();
 
 			//insert statement
-			String query = " insert into cars (CAR_BRAND, MODEL)"
+			String insertInfoInTableQuery = " insert into cars (CAR_BRAND, MODEL)"
 					+ " values (?, ?)";
 
 			// create the mysql insert prepared statement
-			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			PreparedStatement preparedStatement = connection.prepareStatement(insertInfoInTableQuery);
 			preparedStatement.setString(1, carBrand);
 			preparedStatement.setString(2, carModel);
 
@@ -144,13 +150,13 @@ public class Main {
 	 * Method for get information from database
 	 */
 	private static void getInfoFromDB() {
-		String selectTableDB = "select * from cars where CAR_ID > 3;";
+		String selectTableDBQuery = "select * from cars where CAR_ID > 3;";
 		Connection connection;
 		Statement statement;
 		try {
 			connection = getDBConnection();
 			statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(selectTableDB);
+			ResultSet resultSet = statement.executeQuery(selectTableDBQuery);
 
 			while (resultSet.next()) {
 				String carModel = resultSet.getNString("CAR_BRAND");
@@ -161,6 +167,27 @@ public class Main {
 			}
 
 		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+	}
+
+	/**
+	 * Method delete car by model
+	 *
+	 * @param carModel - id of car in the table
+	 */
+	private static void deleteCarFromDB(String carModel) {
+		String deleteTableQuery = "DELETE FROM cars WHERE MODEL ==" + carModel + ";";
+		Connection connection;
+		Statement statement;
+
+		try {
+			connection = getDBConnection();
+			statement = connection.createStatement();
+
+			statement.executeUpdate(deleteTableQuery);
+			System.out.println("Record is deleted from cars table");
+		} catch (SQLException ex) {
 			System.out.println(ex.getMessage());
 		}
 	}

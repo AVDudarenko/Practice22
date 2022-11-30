@@ -17,23 +17,34 @@ public class Main {
 
 
 	public static void main(String[] args) throws SQLException {
-//		createDBCarsTable();
+		createDBCarsTable();
 		Scanner scanner = new Scanner(System.in);
-		String carModel = null;
-		String cardBrand = null;
+		String carModel;
+		String cardBrand;
+		String command;
 
-		for (int i = 0; i < 5; i++) {
-			System.out.println("Please enter car model: ");
-			carModel = scanner.nextLine();
-			System.out.println("Please enter car brand: ");
-			cardBrand = scanner.nextLine();
-			insertStatements(cardBrand, carModel);
+		System.out.println("Available commands: createDBTable, insertStatement, getInfoFromDB");
+		command = scanner.nextLine();
+		switch (command) {
+			case "createDBTable" -> createDBCarsTable();
+			case "insertStatement" -> {
+				for (int i = 0; i < 5; i++) {
+					System.out.println("Please enter car model: ");
+					carModel = scanner.nextLine();
+					System.out.println("Please enter car brand: ");
+					cardBrand = scanner.nextLine();
+					insertStatements(cardBrand, carModel);
+				}
+			}
+			case "getInfoFromDB" -> getInfoFromDB();
 		}
-		scanner.close();
-
-
 	}
 
+	/**
+	 * Method for create database
+	 *
+	 * @throws SQLException
+	 */
 	private static void createDBCarsTable() throws SQLException {
 
 		Connection connection = null;
@@ -63,6 +74,12 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Method for connect to database
+	 *
+	 * @return - return connection object
+	 * @throws SQLException
+	 */
 	private static Connection getDBConnection() throws SQLException {
 		Connection conn;
 		Properties connectionProps = new Properties();
@@ -94,13 +111,19 @@ public class Main {
 		return conn;
 	}
 
-	private static void insertStatements( String carBrand, String carModel) {
-		Connection connection = null;
+	/**
+	 * Method for insert statement into table
+	 *
+	 * @param carBrand - car brand
+	 * @param carModel - car model
+	 */
+	private static void insertStatements(String carBrand, String carModel) {
+		Connection connection;
 		try {
 			connection = getDBConnection();
 
 			//insert statement
-			String query = " insert into cars (MODEL, CAR_BRAND)"
+			String query = " insert into cars (CAR_BRAND, MODEL)"
 					+ " values (?, ?)";
 
 			// create the mysql insert prepared statement
@@ -115,6 +138,30 @@ public class Main {
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
 		}
+	}
 
+	/**
+	 * Method for get information from database
+	 */
+	private static void getInfoFromDB() {
+		String selectTableDB = "select * from cars where CAR_ID > 3;";
+		Connection connection;
+		Statement statement;
+		try {
+			connection = getDBConnection();
+			statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(selectTableDB);
+
+			while (resultSet.next()) {
+				String carModel = resultSet.getNString("CAR_BRAND");
+				String carBrand = resultSet.getNString("MODEL");
+
+				System.out.println("================================================");
+				System.out.println("Car brand: " + carBrand + " \nCar Model: " + carModel);
+			}
+
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+		}
 	}
 }
